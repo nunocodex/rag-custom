@@ -1,0 +1,30 @@
+# Secrets (contains API keys, passwords, tokens)
+.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Runtime data (ChromaDB persistence, collection cache, logs)
+data/
+collection_data/
+scheduler/logs/
+
+# Agent workspace (pi agent ephemeral state)
+.pi/
+
+# Docker overrides
+docker-compose.override.yml
+
+# IDE and editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

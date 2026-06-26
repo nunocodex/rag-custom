@@ -1,0 +1,2 @@
+# Daily refresh at 03:00
+0 3 * * * /usr/local/bin/update.sh >> /var/log/rag/update.log 2>&1

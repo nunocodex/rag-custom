@@ -1,0 +1,77 @@
+use_default_settings: true
+
+server:
+  secret_key: ${SEARXNG_SECRET_KEY:-changeme}
+  limiter: false
+  image_proxy: false
+
+ui:
+  default_locale: en
+  theme: simple
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: ""
+  formats:
+    - html
+    - json
+
+engines:
+  - name: google
+    engine: google
+    shortcut: g
+    disabled: true
+
+  - name: duckduckgo
+    engine: duckduckgo
+    shortcut: ddg
+    disabled: false
+
+  - name: bing
+    engine: bing
+    shortcut: b
+    disabled: false
+
+  - name: brave
+    engine: brave
+    shortcut: br
+    disabled: false
+
+  - name: stackoverflow
+    engine: stackoverflow
+    shortcut: so
+    disabled: false
+
+  - name: wikipedia
+    engine: wikipedia
+    shortcut: wp
+    disabled: false
+
+  - name: github
+    engine: github
+    shortcut: gh
+    disabled: false
+
+  - name: arxiv
+    engine: arxiv
+    shortcut: ax
+    disabled: false
+
+  - name: pubmed
+    engine: pubmed
+    shortcut: pm
+    disabled: false
+
+  - name: searx
+    engine: searx
+    shortcut: sx
+    disabled: true
+
+outgoing:
+  request_timeout: 10
+  max_request_timeout: 20
+  enable_http2: true
+
+redis:
+  url: redis://redis:6379/0

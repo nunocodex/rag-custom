@@ -1,0 +1,122 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag-ollama
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - OLLAMA_KEEP_ALIVE=24h
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    networks:
+      - rag-net
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: rag-chromadb
+    volumes:
+      - ./data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    networks:
+      - rag-net
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  api:
+    build: ./api
+    container_name: rag-api
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION:-rag_collection}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-nomic-embed-text}
+      - LLM_MODEL=${LLM_MODEL:-llama3.1:8b}
+      - CHUNK_SIZE=${CHUNK_SIZE:-512}
+      - CHUNK_OVERLAP=${CHUNK_OVERLAP:-128}
+    volumes:
+      - ${HOST_DOCS_DIR:-./tech-docs}:/app/docs:ro
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      - ollama
+      - chromadb
+    restart: unless-stopped
+    networks:
+      - rag-net
+
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    ports:
+      - "7777:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:7777/
+      - SEARXNG_SECRET_KEY=${SEARXNG_SECRET_KEY:-changeme}
+    volumes:
+      - ./searxng-settings.yml:/etc/searxng/settings.yml:ro
+    restart: unless-stopped
+    networks:
+      - rag-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: rag-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - rag-net
+
+  collection-service:
+    build: ./collection
+    container_name: rag-collection
+    environment:
+      - SEARXNG_URL=http://searxng:8080
+      - REDIS_URL=redis://redis:6379/0
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION:-rag_collection}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-nomic-embed-text}
+      - LLM_MODEL=${LLM_MODEL:-llama3.1:8b}
+      - TTL_DAYS_DEFAULT=${TTL_DAYS_DEFAULT:-30}
+      - TRUST_SCORE_MIN=${TRUST_SCORE_MIN:-3}
+      - SCHEDULE_INTERVAL_HOURS=${SCHEDULE_INTERVAL_HOURS:-24}
+    volumes:
+      - ./collection_data:/app/data
+    ports:
+      - "8181:8181"
+    depends_on:
+      - searxng
+      - redis
+      - chromadb
+      - ollama
+    restart: unless-stopped
+    networks:
+      - rag-net
+
+volumes:
+  ollama_data:
+  redis_data:
+
+networks:
+  rag-net:
+    driver: bridge
