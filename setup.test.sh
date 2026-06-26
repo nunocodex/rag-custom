@@ -68,26 +68,6 @@ assert_not_contains() {
     fi
 }
 
-assert_key_count() {
-    local file="$1"
-    local count
-    count=$(grep -c "^SEARXNG_SECRET_KEY=" "$file" || true)
-    assert "$desc (SEARXNG_SECRET_KEY line count)" "$2" "$count"
-}
-
-assert_exit_code() {
-    local desc="$1"
-    local expected="$2"
-    local actual="$3"
-    if [ "$expected" -eq "$actual" ]; then
-        echo "  PASS: $desc"
-        PASS=$((PASS + 1))
-    else
-        echo "  FAIL: $desc (expected exit $expected, got $actual)"
-        FAIL=$((FAIL + 1))
-    fi
-}
-
 # ================================================================
 # T1: .env does not exist → create from template + generate key
 # ================================================================
@@ -424,6 +404,7 @@ echo "=== T10: searxng-settings.yml uses env var interpolation ==="
 if [ -f "$SCRIPT_DIR/searxng-settings.yml" ]; then
     # Verify secret_key uses env var interpolation, not a hardcoded value
     SECRET_LINE=$(grep "secret_key:" "$SCRIPT_DIR/searxng-settings.yml")
+    # shellcheck disable=SC2016
     if echo "$SECRET_LINE" | grep -q '\${SEARXNG_SECRET_KEY'; then
         echo "  PASS: T10a: secret_key uses env var interpolation (\${SEARXNG_SECRET_KEY})"
         PASS=$((PASS + 1))

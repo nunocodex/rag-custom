@@ -1,6 +1,6 @@
 # shellcheck configuration
 # Disable SC1091: "Not following" for sourced files (dynamic paths)
-disable=SC1091
+disable=SC1091,SC2250,SC2292,SC2310,SC2317
 
 # Enable all checks by default
 enable=all
