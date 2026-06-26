@@ -1,0 +1,23 @@
+# Secrets
+.env
+
+# Agent workspace
+.pi/
+
+# Runtime data
+data/
+collection_data/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/

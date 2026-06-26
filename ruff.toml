@@ -1,0 +1,21 @@
+target-version = "py312"
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # import sorting
+    "N",   # pep8-naming
+    "UP",  # pyupgrade (modernize Python)
+]
+ignore = [
+    "E501",  # line too long (black handles formatting)
+]
+
+[format]
+# Use black-compatible formatting
+line-ending = "auto"
+
+[lint.per-file-ignores]
+"tests/*" = ["N"]  # Allow non-PEP8 naming in tests (e.g., test_ functions)

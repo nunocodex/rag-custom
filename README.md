@@ -1,6 +1,11 @@
 # RAG Custom — Enterprise RAG Stack
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/nunocodex/rag-custom/actions/workflows/ci.yml/badge.svg)](https://github.com/nunocodex/rag-custom/actions/workflows/ci.yml)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/nunocodex/rag-custom)
+![Docker Image Version](https://img.shields.io/badge/docker-api-2496ED?logo=docker)
+![Docker Image Version](https://img.shields.io/badge/docker-collection-2496ED?logo=docker)
+![Docker Image Version](https://img.shields.io/badge/docker-scheduler-2496ED?logo=docker)
 
 A self‑hosted, production‑ready **Retrieval‑Augmented Generation (RAG)** pipeline powered by **Ollama** LLMs, **ChromaDB** vector store, **SearXNG** meta‑search, and **Redis** caching — all orchestrated via **Docker Compose**.
 
