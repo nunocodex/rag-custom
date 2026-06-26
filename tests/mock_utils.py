@@ -13,7 +13,6 @@ Usage:
 """
 
 from unittest.mock import AsyncMock, MagicMock, patch
-from typing import Optional
 
 
 def mock_ollama_healthy():

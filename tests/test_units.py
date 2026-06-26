@@ -6,13 +6,13 @@ Tests T17–T26 from PLAN.md v4.0.
 Covers compute_content_hash and calculate_trust_score.
 """
 
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Import the actual functions from the pure utils module (no external deps)
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from collection.app.utils import compute_content_hash, calculate_trust_score
+from collection.app.utils import calculate_trust_score, compute_content_hash
 
 
 class TestComputeContentHash(unittest.TestCase):

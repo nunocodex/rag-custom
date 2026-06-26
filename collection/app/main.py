@@ -1,29 +1,29 @@
-import os
-import json
 import hashlib
-import asyncio
+import json
 import logging
-from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional
+import os
 from contextlib import asynccontextmanager
-import httpx
-from bs4 import BeautifulSoup
+from datetime import datetime, timedelta
+from typing import Any
 
+import chromadb
+import httpx
 import redis.asyncio as redis
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from pydantic import BaseModel, Field
-from tenacity import retry, stop_after_attempt, wait_exponential
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from bs4 import BeautifulSoup
+from fastapi import BackgroundTasks, FastAPI
 
 # LlamaIndex
-from llama_index.core import Settings, Document, VectorStoreIndex
+from llama_index.core import Document, Settings, VectorStoreIndex
 from llama_index.core.storage import StorageContext
-from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from llama_index.readers.web import SimpleWebPageReader
-import chromadb
+from pydantic import BaseModel, Field
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+from .utils import calculate_trust_score, compute_content_hash
 
 # ---------- Configuration ----------
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +52,7 @@ class WebSearchRequest(BaseModel):
 
 class WebSearchResponse(BaseModel):
     query: str
-    sources: List[Dict[str, Any]]
+    sources: list[dict[str, Any]]
     cached: bool
     ingested: int
 
@@ -157,7 +157,7 @@ def get_index():
 # ---------- Core Functions ----------
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=10))
-async def search_searxng(query: str, top_k: int) -> List[Dict[str, Any]]:
+async def search_searxng(query: str, top_k: int) -> list[dict[str, Any]]:
     """Search via SearXNG API."""
     async with httpx.AsyncClient(timeout=15.0) as client:
         resp = await client.get(
@@ -183,7 +183,7 @@ async def search_searxng(query: str, top_k: int) -> List[Dict[str, Any]]:
                 deduped.append(r)
         return deduped[:top_k]
 
-async def extract_content(url: str) -> Optional[str]:
+async def extract_content(url: str) -> str | None:
     """Extract text content from URL using httpx + BeautifulSoup (fallback)."""
     try:
         async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
@@ -203,9 +203,7 @@ async def extract_content(url: str) -> Optional[str]:
         logger.warning("Extraction error for %s: %s", url, str(e))
         return None
 
-from .utils import compute_content_hash, calculate_trust_score
-
-async def ingest_document(content: str, metadata: Dict[str, Any]) -> bool:
+async def ingest_document(content: str, metadata: dict[str, Any]) -> bool:
     """Ingest a document into ChromaDB, creating index if missing."""
     global _index
 
@@ -230,7 +228,7 @@ async def ingest_document(content: str, metadata: Dict[str, Any]) -> bool:
         logger.error("Ingestion failed: %s", str(e))
         return False
 
-async def cache_result(query: str, results: List[Dict[str, Any]], ttl_days: int) -> None:
+async def cache_result(query: str, results: list[dict[str, Any]], ttl_days: int) -> None:
     """Cache search results in Redis with TTL."""
     r = await get_redis()
     # Hash the query to avoid long/special-character keys in Redis
@@ -239,7 +237,7 @@ async def cache_result(query: str, results: List[Dict[str, Any]], ttl_days: int)
     ttl_seconds = ttl_days * 86400
     await r.setex(key, ttl_seconds, json.dumps(results))
 
-async def get_cached_result(query: str) -> Optional[List[Dict[str, Any]]]:
+async def get_cached_result(query: str) -> list[dict[str, Any]] | None:
     """Retrieve cached search results from Redis."""
     r = await get_redis()
     query_hash = hashlib.sha256(query.encode("utf-8")).hexdigest()[:16]

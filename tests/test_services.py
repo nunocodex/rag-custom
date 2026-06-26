@@ -6,10 +6,10 @@ Tests T27–T31 from PLAN.md v4.0.
 Covers verify_services and get_index from api/app/main.py.
 """
 
-import unittest
-import sys
 import os
-from unittest.mock import patch, MagicMock
+import sys
+import unittest
+from unittest.mock import MagicMock, patch
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -27,12 +27,12 @@ for mod_name in [
     if mod_name not in sys.modules:
         sys.modules[mod_name] = MagicMock()
 
-from api.app.main import verify_services, get_index  # noqa: E402
-from tests.mock_utils import (
+from api.app.main import get_index, verify_services  # noqa: E402
+from tests.mock_utils import (  # noqa: E402
+    mock_chromadb_failing,
+    mock_chromadb_healthy,
     mock_ollama_healthy,
     mock_ollama_timeout,
-    mock_chromadb_healthy,
-    mock_chromadb_failing,
     mock_vector_store_index,
 )
 

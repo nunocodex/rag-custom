@@ -1,28 +1,23 @@
-import os
 import logging
-import asyncio
-from typing import List, Optional
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from tenacity import retry, stop_after_attempt, wait_exponential
+from fastapi import FastAPI, File, HTTPException, UploadFile
 
 # LlamaIndex
 from llama_index.core import (
     Settings,
     SimpleDirectoryReader,
     VectorStoreIndex,
-    Document,
 )
 from llama_index.core.storage import StorageContext
-from llama_index.core.retrievers import BaseRetriever
-from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.ollama import OllamaEmbedding
+from llama_index.llms.ollama import Ollama
 from llama_index.vector_stores.chroma import ChromaVectorStore  # CORRETTO
+from pydantic import BaseModel, Field
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # ---------- Config ----------
 logging.basicConfig(level=logging.INFO)
@@ -46,12 +41,12 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     response: str
-    sources: List[str]
+    sources: list[str]
 
 class IngestResponse(BaseModel):
     status: str
     ingested: int
-    message: Optional[str] = None
+    message: str | None = None
 
 # ---------- Lifespan ----------
 @asynccontextmanager
@@ -69,9 +64,9 @@ app = FastAPI(
 )
 
 # ---------- Globals ----------
-_index: Optional[VectorStoreIndex] = None
-_chroma_client: Optional[chromadb.HttpClient] = None
-_vector_store: Optional[ChromaVectorStore] = None
+_index: VectorStoreIndex | None = None
+_chroma_client: chromadb.HttpClient | None = None
+_vector_store: ChromaVectorStore | None = None
 
 # ---------- Retry Helpers ----------
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=1, max=10))
@@ -119,7 +114,7 @@ def get_vector_store() -> ChromaVectorStore:
         _vector_store = ChromaVectorStore(chroma_collection=collection)
     return _vector_store
 
-def get_index() -> Optional[VectorStoreIndex]:
+def get_index() -> VectorStoreIndex | None:
     global _index
     if _index is not None:
         return _index

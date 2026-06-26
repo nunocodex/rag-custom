@@ -5,10 +5,9 @@ Tests T11–T14 from PLAN.md v3.0.
 Verifies fixes via static source analysis (no runtime dependencies).
 """
 
+import ast
 import os
 import re
-import sys
-import ast
 import unittest
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -196,7 +195,7 @@ class TestInfraFixes(unittest.TestCase):
         )
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field  # noqa: E402, F401
 
 
 class TestPydanticValidation(unittest.TestCase):
